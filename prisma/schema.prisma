@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  READER
+  ADMIN
+}
+
+enum EPaperStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  phone         String?
+  passwordHash  String
+  role          Role           @default(READER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  subscriptions Subscription[]
+  payments      Payment[]
+  clips         Clip[]
+  resetTokens   PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Edition {
+  id        String    @id @default(cuid())
+  name      String                          // e.g. "India"
+  slug      String    @unique               // e.g. "india"
+  language  String    @default("English")
+  createdAt DateTime  @default(now())
+
+  epapers   EPaper[]
+}
+
+model EPaper {
+  id          String       @id @default(cuid())
+  edition     Edition      @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  editionId   String
+  publishDate DateTime
+  status      EPaperStatus @default(DRAFT)
+  coverThumb  String?                        // path to cover thumbnail
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  pages       Page[]
+
+  @@unique([editionId, publishDate])
+  @@index([publishDate])
+}
+
+model Page {
+  id         String    @id @default(cuid())
+  epaper     EPaper    @relation(fields: [epaperId], references: [id], onDelete: Cascade)
+  epaperId   String
+  pageNumber Int
+  fullImage  String                          // path to full-res page image
+  thumbImage String                          // path to thumbnail
+  width      Int?
+  height     Int?
+
+  articles   Article[]
+
+  @@unique([epaperId, pageNumber])
+}
+
+model Article {
+  id        String   @id @default(cuid())
+  code      Int      @unique @default(autoincrement())  // short, shareable news ID
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId    String
+  headline  String
+  body      String   @default("")
+  category  String?
+  // clip rectangle as fractions (0..1) of page dimensions -> resolution independent
+  clipX     Float    @default(0)
+  clipY     Float    @default(0)
+  clipW     Float    @default(0)
+  clipH     Float    @default(0)
+  clipImage String?                          // optional cropped image of the article
+  createdAt DateTime @default(now())
+
+  clips     Clip[]
+
+  @@index([headline])
+}
+
+model Plan {
+  id           String         @id @default(cuid())
+  name         String
+  priceInPaise Int                            // store money in paise (INR)
+  durationDays Int
+  features     String         @default("")
+  active       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  plan      Plan               @relation(fields: [planId], references: [id])
+  planId    String
+  status    SubscriptionStatus @default(PENDING)
+  startDate DateTime?
+  endDate   DateTime?
+  payment   Payment?           @relation(fields: [paymentId], references: [id])
+  paymentId String?            @unique
+  createdAt DateTime           @default(now())
+
+  @@index([userId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  amountInPaise Int
+  txnid         String        @unique        // our generated transaction id
+  easebuzzId    String?                       // Easebuzz reference / bank ref
+  status        PaymentStatus @default(INITIATED)
+  productinfo   String        @default("NewsTrail Subscription")
+  rawResponse   Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  subscription  Subscription?
+}
+
+model Clip {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, articleId])
+}

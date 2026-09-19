@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink antialiased;
+    /* Inter: stylistic sets + always use clean lining figures */
+    font-feature-settings: "cv11", "ss01";
+    font-variant-numeric: lining-nums;
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
+  }
+  ::selection {
+    @apply bg-brand/15;
+  }
+}
+
+@layer components {
+  /* Masthead / display serif */
+  .masthead {
+    font-family: var(--font-serif), Georgia, serif;
+    letter-spacing: -0.015em;
+    font-variant-numeric: lining-nums proportional-nums;
+    font-feature-settings: "lnum" 1, "pnum" 1;
+  }
+  .headline {
+    font-family: var(--font-serif), Georgia, serif;
+    @apply font-semibold tracking-tight text-ink;
+    font-variant-numeric: lining-nums proportional-nums;
+    font-feature-settings: "lnum" 1, "pnum" 1;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-white hover:bg-brand-dark;
+  }
+  .btn-outline {
+    @apply btn border border-line bg-white text-ink-soft hover:border-brand hover:text-brand;
+  }
+  .btn-ghost {
+    @apply btn text-ink-soft hover:bg-black/5;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink-soft;
+  }
+
+  /* Numerals — clean lining, tabular figures for prices/stats/IDs */
+  .num {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings: "lnum" 1, "tnum" 1;
+    letter-spacing: -0.01em;
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-xl border border-line bg-white shadow-card;
+  }
+  .edition-card {
+    @apply overflow-hidden rounded-xl border border-line bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover;
+  }
+}

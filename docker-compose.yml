@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: newstrail-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: newstrail
+      POSTGRES_PASSWORD: newstrail
+      POSTGRES_DB: newstrail
+    ports:
+      - "5432:5432"
+    volumes:
+      - newstrail_pgdata:/var/lib/postgresql/data
+
+volumes:
+  newstrail_pgdata:

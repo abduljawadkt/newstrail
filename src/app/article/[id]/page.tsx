@@ -5,8 +5,22 @@ import { formatDateParam } from "@/lib/epaper";
 import { getCurrentUser } from "@/lib/session";
 import { hasFullAccess } from "@/lib/subscription";
 import SaveClipButton from "@/components/SaveClipButton";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const article = await prisma.article.findUnique({
+    where: { id: params.id },
+    select: { headline: true, body: true },
+  });
+  if (!article) return { title: "Article not found" };
+  return {
+    title: article.headline,
+    description: article.body ? article.body.slice(0, 160) : article.headline,
+    openGraph: { title: article.headline, type: "article" },
+  };
+}
 
 export default async function ArticlePage({ params }: { params: { id: string } }) {
   const article = await prisma.article.findUnique({

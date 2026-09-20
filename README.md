@@ -1,64 +1,81 @@
 # NewsTrail E-Paper
 
-Digital newspaper (e-paper) platform for **NewsTrail India** — page-flip viewer, article clipping,
-edition/date archive, user accounts, subscriptions (Easebuzz) and an admin back-office.
+Full-stack digital newspaper (e-paper) platform for **NewsTrail India** — a page-by-page
+reader with article clipping, an admin back-office (upload full-PDF editions that auto-split
+into pages, map article regions), user accounts, and Easebuzz subscriptions with a paywall.
 
-Built with **Next.js 14 (App Router) · TypeScript · PostgreSQL · Prisma · Tailwind · NextAuth · Easebuzz**.
+**Stack:** Next.js 14 (App Router) · TypeScript · PostgreSQL (Neon) · Prisma · NextAuth ·
+Tailwind CSS · sharp · pdf-to-img · Easebuzz.
 
-## Prerequisites
-- Node.js 18+ (tested on Node 22)
-- PostgreSQL — via Docker (recommended) or a local/hosted instance
+## Features
+
+**Readers**
+- Archive homepage with **date + edition filter**
+- Page-flip **viewer** (edition tabs, date picker, page dropdown, zoom, thumbnails, hide-pages)
+- **Crop tool** — download any region of a page (subscribers)
+- **Single-article extraction** — click a mapped headline → cropped clipping with a News ID + download
+- Full-text **search**, saved **clips**
+- Account area: profile, change password, current plan, subscription history
+- **Forgot/reset password** flow
+
+**Paywall:** page 1 is a free preview for every edition; pages 2+ require an active
+subscription. Admins have full access.
+
+**Admin (`/admin`)**
+- Dashboard (users, editions, active subscriptions, revenue)
+- **Upload a full newspaper PDF → auto-split into pages** (or upload page images)
+- Publish date defaults to tomorrow; supports the last 3 months to a week ahead
+- Visual **article-region mapper**, per-page delete, replace-all-pages
+- Manage plans, view users & subscriptions
+
+**Payments:** Easebuzz hosted checkout with SHA-512 request hashing and verified
+callbacks. A local **mock** mode lets you demo the full flow without keys.
 
 ## Getting started
 
 ```bash
-# 1. Install dependencies
+# 1. Install
 npm install
 
-# 2. Start Postgres (Docker)
-npm run docker:up          # or use Neon/Supabase and set DATABASE_URL in .env
+# 2. Database (choose one)
+#    - Docker:  npm run docker:up
+#    - Neon/Supabase: paste the connection string into .env
+cp .env.example .env        # then edit values
 
-# 3. Copy env and adjust if needed
-cp .env.example .env
-
-# 4. Create the database schema
+# 3. Schema + demo data
 npm run db:push
-
-# 5. Seed demo data (edition, admin, plans, sample e-papers with images)
 npm run db:seed
 
-# 6. Run the dev server
-npm run dev
+# 4. Run
+npm run dev                 # http://localhost:3000
 ```
-
-Open http://localhost:3000
 
 ### Demo logins
 - **Admin:**  `admin@newstrail.in` / `admin123`
 - **Reader:** `reader@newstrail.in` / `reader123`
 
-## Payments (Easebuzz)
-Set `EASEBUZZ_KEY`, `EASEBUZZ_SALT`, and `EASEBUZZ_ENV` (`test` or `prod`) in `.env`.
-Get these from your Easebuzz dashboard. Do **not** commit real keys.
+> Change or remove these before production.
+
+## Environment
+See [`.env.example`](.env.example). `DATABASE_URL` and `NEXTAUTH_SECRET` are required;
+the app logs a clear error if they're missing.
+
+## Deployment
+See [`DEPLOYMENT.md`](DEPLOYMENT.md). **Note:** uploads are written to `public/uploads`
+on local disk — deploy on a VPS/container with a persistent volume, or move storage to
+Vercel Blob/S3 before deploying to serverless.
 
 ## Project layout
-- `prisma/schema.prisma` — data model
-- `prisma/seed.ts` — demo data + placeholder page image generator
-- `src/app` — pages (App Router) and API routes
-- `src/components` — shared UI
-- `src/lib` — prisma client, auth, easebuzz helpers
+- `prisma/schema.prisma` — data model · `prisma/seed.ts` — demo data + image generator
+- `src/app` — pages & API routes (App Router)
+- `src/components` — UI (viewer, admin, account)
+- `src/lib` — prisma, auth, session, subscription, easebuzz, storage helpers, env, rate-limit
 - `public/uploads` — generated/uploaded page images (gitignored)
 
-## Build phases
-- [x] Phase 0 — scaffold, schema, branding shell, archive grid, seed
-- [x] Phase 1 — auth (register/login/profile + route guards)
-- [x] Phase 2 — e-paper viewer + article view
-- [x] Phase 3 — admin (edition upload + article region mapper + plans + users)
-- [x] Phase 4 — plans + Easebuzz subscription flow + paywall (+ local mock gateway)
-- [x] Phase 5 — search, saved clips, header search, polish
-
-## Payment modes
-`EASEBUZZ_ENV` in `.env`:
-- `mock` (default in dev) — simulates the gateway locally, no keys needed. Great for demos.
-- `test` — real Easebuzz test gateway (needs test `EASEBUZZ_KEY` / `EASEBUZZ_SALT`).
-- `prod` — live gateway.
+## Security & hardening
+- All `/api/admin/*` routes require an admin session; middleware guards `/admin`, `/profile`, `/clips`
+- Payment callbacks are hash-verified before granting access
+- Password reset uses hashed, expiring, single-use tokens
+- Rate limiting on register / forgot-password; security headers set in `next.config.js`
+- Upload size/type validation on image and PDF ingestion
+- Health probe at `GET /api/health`

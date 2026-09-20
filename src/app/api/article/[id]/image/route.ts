@@ -2,15 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { hasFullAccess } from "@/lib/subscription";
+import { fsPathFromPublic, ensureUploadDir } from "@/lib/storage";
 import sharp from "sharp";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 export const runtime = "nodejs";
-
-function publicToFsPath(publicPath: string) {
-  return path.join(process.cwd(), "public", publicPath.replace(/^\//, ""));
-}
 
 /**
  * Crops a single article out of its full page image and returns it as a JPEG.
@@ -36,7 +33,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 
   try {
-    const fullPath = publicToFsPath(article.page.fullImage);
+    const fullPath = fsPathFromPublic(article.page.fullImage);
     const input = sharp(fullPath);
     const meta = await input.metadata();
     const W = article.page.width || meta.width || 0;
@@ -67,8 +64,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     // Cache to disk + record clipImage (best-effort)
     try {
-      const dir = publicToFsPath(`/uploads/${article.page.epaperId}`);
-      await fs.mkdir(dir, { recursive: true });
+      const dir = await ensureUploadDir(article.page.epaperId);
       const cacheName = `clip-${article.code}.jpg`;
       await fs.writeFile(path.join(dir, cacheName), buffer);
       const clipPublic = `/uploads/${article.page.epaperId}/${cacheName}`;

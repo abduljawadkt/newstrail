@@ -5,9 +5,31 @@ import { hasFullAccess } from "@/lib/subscription";
 import { prisma } from "@/lib/prisma";
 import EpaperViewer from "@/components/EpaperViewer";
 
+import type { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
 
 const FREE_PAGE_COUNT = 1; // page 1 is a free preview
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { edition: string; date: string };
+}): Promise<Metadata> {
+  const epaper = await getEpaperByEditionAndDate(params.edition, params.date);
+  if (!epaper) return { title: "Edition not found" };
+  const label = epaper.publishDate.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const title = `${epaper.edition.name} — ${label}`;
+  return {
+    title,
+    description: `Read the ${epaper.edition.name} edition of NewsTrail for ${label}, page by page.`,
+    openGraph: { title, type: "article" },
+  };
+}
 
 export default async function EpaperPage({
   params,

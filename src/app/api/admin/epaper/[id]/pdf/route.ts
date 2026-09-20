@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/session";
+import { ensureUploadDir, removeUploadDir, publicUrl } from "@/lib/storage";
 import sharp from "sharp";
-import fs from "node:fs/promises";
 import path from "node:path";
 
 export const runtime = "nodejs";
@@ -19,6 +19,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   });
   if (!epaper) return NextResponse.json({ error: "E-paper not found" }, { status: 404 });
 
+  const MAX_PDF_BYTES = 100 * 1024 * 1024; // 100 MB
+
   const form = await req.formData();
   const file = form.get("pdf");
   const replace = String(form.get("replace") ?? "") === "true";
@@ -28,18 +30,18 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (file.type && file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
     return NextResponse.json({ error: "File must be a PDF" }, { status: 400 });
   }
-
-  const dir = path.join(process.cwd(), "public", "uploads", epaper.id);
+  if (file.size > MAX_PDF_BYTES) {
+    return NextResponse.json({ error: "PDF exceeds the 100 MB limit" }, { status: 400 });
+  }
 
   // Replace mode: wipe existing pages (DB rows + image files) first.
   if (replace) {
     await prisma.page.deleteMany({ where: { epaperId: epaper.id } });
-    await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
+    await removeUploadDir(epaper.id);
   }
-  await fs.mkdir(dir, { recursive: true });
+  const dir = await ensureUploadDir(epaper.id);
 
   let nextPageNumber = replace ? 1 : (epaper.pages[0]?.pageNumber ?? 0) + 1;
-  const publicBase = `/uploads/${epaper.id}`;
   let coverThumb: string | null = null;
   let created = 0;
 
@@ -62,13 +64,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         data: {
           epaperId: epaper.id,
           pageNumber,
-          fullImage: `${publicBase}/${fullName}`,
-          thumbImage: `${publicBase}/${thumbName}`,
+          fullImage: publicUrl(epaper.id, fullName),
+          thumbImage: publicUrl(epaper.id, thumbName),
           width: meta.width ?? null,
           height: meta.height ?? null,
         },
       });
-      if (page.pageNumber === 1) coverThumb = `${publicBase}/${thumbName}`;
+      if (page.pageNumber === 1) coverThumb = publicUrl(epaper.id, thumbName);
       created++;
     }
   } catch (err) {

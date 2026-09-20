@@ -18,9 +18,31 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+const appUrl = process.env.APP_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "NewsTrail E-Paper",
-  description: "Read the NewsTrail newspaper online — editions, archives and articles.",
+  metadataBase: new URL(appUrl),
+  title: {
+    default: "NewsTrail E-Paper — Read the newspaper online",
+    template: "%s | NewsTrail",
+  },
+  description:
+    "Read the NewsTrail newspaper online — browse every edition page by page, zoom, clip and download articles, and search the archive.",
+  applicationName: "NewsTrail",
+  keywords: ["NewsTrail", "e-paper", "epaper", "newspaper", "India", "digital newspaper"],
+  openGraph: {
+    type: "website",
+    siteName: "NewsTrail",
+    title: "NewsTrail E-Paper",
+    description: "Read the NewsTrail newspaper online — editions, archives and articles.",
+    url: appUrl,
+  },
+  twitter: {
+    card: "summary",
+    title: "NewsTrail E-Paper",
+    description: "Read the NewsTrail newspaper online — editions, archives and articles.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

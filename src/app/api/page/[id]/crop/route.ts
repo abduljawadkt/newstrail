@@ -2,14 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { hasFullAccess } from "@/lib/subscription";
+import { fsPathFromPublic } from "@/lib/storage";
 import sharp from "sharp";
-import path from "node:path";
 
 export const runtime = "nodejs";
-
-function publicToFsPath(publicPath: string) {
-  return path.join(process.cwd(), "public", publicPath.replace(/^\//, ""));
-}
 
 function frac(v: string | null) {
   const n = Number(v);
@@ -43,7 +39,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
-    const fullPath = publicToFsPath(page.fullImage);
+    const fullPath = fsPathFromPublic(page.fullImage);
     const meta = await sharp(fullPath).metadata();
     const W = page.width || meta.width || 0;
     const H = page.height || meta.height || 0;

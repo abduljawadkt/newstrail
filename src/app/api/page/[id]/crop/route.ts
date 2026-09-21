@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { hasFullAccess } from "@/lib/subscription";
-import { fsPathFromPublic } from "@/lib/storage";
+import { getBytes } from "@/lib/storage";
 import sharp from "sharp";
 
 export const runtime = "nodejs";
@@ -39,8 +39,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   if (!page) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   try {
-    const fullPath = fsPathFromPublic(page.fullImage);
-    const meta = await sharp(fullPath).metadata();
+    const source = await getBytes(page.fullImage);
+    const meta = await sharp(source).metadata();
     const W = page.width || meta.width || 0;
     const H = page.height || meta.height || 0;
     if (!W || !H) throw new Error("Unknown page dimensions");
@@ -54,7 +54,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     width = Math.max(1, Math.min(width, W - left));
     height = Math.max(1, Math.min(height, H - top));
 
-    const buffer = await sharp(fullPath)
+    const buffer = await sharp(source)
       .extract({ left, top, width, height })
       .jpeg({ quality: 90 })
       .toBuffer();

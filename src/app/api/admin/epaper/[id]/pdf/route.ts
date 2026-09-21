@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/session";
-import { ensureUploadDir, removeUploadDir, publicUrl } from "@/lib/storage";
+import { putObject, deleteEpaper, publicPathFor } from "@/lib/storage";
 import sharp from "sharp";
-import path from "node:path";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -34,12 +33,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: "PDF exceeds the 100 MB limit" }, { status: 400 });
   }
 
-  // Replace mode: wipe existing pages (DB rows + image files) first.
+  // Replace mode: wipe existing pages (DB rows + stored files) first.
   if (replace) {
     await prisma.page.deleteMany({ where: { epaperId: epaper.id } });
-    await removeUploadDir(epaper.id);
+    await deleteEpaper(epaper.id);
   }
-  const dir = await ensureUploadDir(epaper.id);
 
   let nextPageNumber = replace ? 1 : (epaper.pages[0]?.pageNumber ?? 0) + 1;
   let coverThumb: string | null = null;
@@ -52,25 +50,27 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     for await (const pageImage of document) {
       const pageNumber = nextPageNumber++;
-      const base = `page-${pageNumber}`;
-      const fullName = `${base}.jpg`;
-      const thumbName = `${base}-thumb.jpg`;
+      const fullPath = publicPathFor(epaper.id, `page-${pageNumber}.jpg`);
+      const thumbPath = publicPathFor(epaper.id, `page-${pageNumber}-thumb.jpg`);
 
       const meta = await sharp(pageImage).metadata();
-      await sharp(pageImage).jpeg({ quality: 85 }).toFile(path.join(dir, fullName));
-      await sharp(pageImage).resize(420).jpeg({ quality: 78 }).toFile(path.join(dir, thumbName));
+      const fullJpeg = await sharp(pageImage).jpeg({ quality: 85 }).toBuffer();
+      const thumbJpeg = await sharp(pageImage).resize(420).jpeg({ quality: 78 }).toBuffer();
+
+      await putObject(fullPath, fullJpeg, "image/jpeg");
+      await putObject(thumbPath, thumbJpeg, "image/jpeg");
 
       const page = await prisma.page.create({
         data: {
           epaperId: epaper.id,
           pageNumber,
-          fullImage: publicUrl(epaper.id, fullName),
-          thumbImage: publicUrl(epaper.id, thumbName),
+          fullImage: fullPath,
+          thumbImage: thumbPath,
           width: meta.width ?? null,
           height: meta.height ?? null,
         },
       });
-      if (page.pageNumber === 1) coverThumb = publicUrl(epaper.id, thumbName);
+      if (page.pageNumber === 1) coverThumb = thumbPath;
       created++;
     }
   } catch (err) {
@@ -87,13 +87,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   if (coverThumb) {
     await prisma.ePaper.update({ where: { id: epaper.id }, data: { coverThumb } });
-  } else {
-    // if pages were appended (not starting at 1), keep existing cover; else set first
+  } else if (!epaper.coverThumb) {
     const first = await prisma.page.findFirst({
       where: { epaperId: epaper.id },
       orderBy: { pageNumber: "asc" },
     });
-    if (first && !epaper.coverThumb) {
+    if (first) {
       await prisma.ePaper.update({ where: { id: epaper.id }, data: { coverThumb: first.thumbImage } });
     }
   }

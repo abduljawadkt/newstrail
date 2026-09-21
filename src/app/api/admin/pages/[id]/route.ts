@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/session";
-import { removePublicFile } from "@/lib/storage";
+import { deleteByPublicPath } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
 
   // Remove image files (best-effort)
   for (const p of [page.fullImage, page.thumbImage]) {
-    if (p) await removePublicFile(p);
+    if (p) await deleteByPublicPath(p);
   }
 
   await prisma.page.delete({ where: { id: page.id } });

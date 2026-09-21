@@ -1,0 +1,38 @@
+# Render Blueprint — deploy NewsTrail from GitHub.
+# In Render: New + → Blueprint → pick this repo. Then set the secret env vars
+# (marked sync:false) in the dashboard.
+services:
+  - type: web
+    name: newstrail
+    runtime: docker
+    plan: free # upgrade to "starter" to remove sleep + get more RAM
+    healthCheckPath: /api/health
+    envVars:
+      - key: STORAGE_DRIVER
+        value: s3 # uploads go to Cloudflare R2 / S3 (free tier has no persistent disk)
+      - key: EASEBUZZ_ENV
+        value: mock
+      - key: DATABASE_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_URL
+        sync: false
+      - key: EASEBUZZ_KEY
+        sync: false
+      - key: EASEBUZZ_SALT
+        sync: false

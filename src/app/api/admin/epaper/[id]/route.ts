@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/session";
-import { removeUploadDir } from "@/lib/storage";
+import { deleteEpaper } from "@/lib/storage";
 
 // Toggle publish status
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
@@ -21,6 +21,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   if (!(await getAdminUser())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   await prisma.ePaper.delete({ where: { id: params.id } });
-  await removeUploadDir(params.id);
+  await deleteEpaper(params.id);
   return NextResponse.json({ ok: true });
 }

@@ -2,16 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { hasFullAccess } from "@/lib/subscription";
-import { fsPathFromPublic, ensureUploadDir } from "@/lib/storage";
+import { getBytes } from "@/lib/storage";
 import sharp from "sharp";
-import fs from "node:fs/promises";
-import path from "node:path";
 
 export const runtime = "nodejs";
 
 /**
  * Crops a single article out of its full page image and returns it as a JPEG.
- * ?download=1 forces a file download. The crop is cached to disk on first use.
+ * ?download=1 forces a file download (subscriber-only).
  */
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const article = await prisma.article.findUnique({
@@ -33,9 +31,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 
   try {
-    const fullPath = fsPathFromPublic(article.page.fullImage);
-    const input = sharp(fullPath);
-    const meta = await input.metadata();
+    const source = await getBytes(article.page.fullImage);
+    const meta = await sharp(source).metadata();
     const W = article.page.width || meta.width || 0;
     const H = article.page.height || meta.height || 0;
     if (!W || !H) throw new Error("Unknown page dimensions");
@@ -57,23 +54,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     width = Math.max(1, Math.min(width, W - left));
     height = Math.max(1, Math.min(height, H - top));
 
-    const buffer = await sharp(fullPath)
+    const buffer = await sharp(source)
       .extract({ left, top, width, height })
       .jpeg({ quality: 90 })
       .toBuffer();
-
-    // Cache to disk + record clipImage (best-effort)
-    try {
-      const dir = await ensureUploadDir(article.page.epaperId);
-      const cacheName = `clip-${article.code}.jpg`;
-      await fs.writeFile(path.join(dir, cacheName), buffer);
-      const clipPublic = `/uploads/${article.page.epaperId}/${cacheName}`;
-      if (article.clipImage !== clipPublic) {
-        await prisma.article.update({ where: { id: article.id }, data: { clipImage: clipPublic } });
-      }
-    } catch {
-      /* caching is optional */
-    }
 
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,

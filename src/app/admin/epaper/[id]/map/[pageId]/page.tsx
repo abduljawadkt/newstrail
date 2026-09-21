@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { assetSrc } from "@/lib/storage";
 import ArticleMapper from "@/components/admin/ArticleMapper";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ export default async function MapPage({
         pageId={page.id}
         epaperId={params.id}
         pageNumber={page.pageNumber}
-        fullImage={page.fullImage}
+        fullImage={assetSrc(page.fullImage)}
         initialArticles={page.articles.map((a) => ({
           id: a.id,
           code: a.code,

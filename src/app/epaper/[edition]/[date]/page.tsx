@@ -3,6 +3,7 @@ import { getEpaperByEditionAndDate, formatDateParam } from "@/lib/epaper";
 import { getCurrentUser } from "@/lib/session";
 import { hasFullAccess } from "@/lib/subscription";
 import { prisma } from "@/lib/prisma";
+import { assetSrc } from "@/lib/storage";
 import EpaperViewer from "@/components/EpaperViewer";
 
 import type { Metadata } from "next";
@@ -71,8 +72,8 @@ export default async function EpaperPage({
       pages={epaper.pages.map((p) => ({
         id: p.id,
         pageNumber: p.pageNumber,
-        fullImage: p.fullImage,
-        thumbImage: p.thumbImage,
+        fullImage: assetSrc(p.fullImage),
+        thumbImage: assetSrc(p.thumbImage),
         articles: p.articles.map((a) => ({
           id: a.id,
           code: a.code,

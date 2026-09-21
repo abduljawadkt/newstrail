@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/session";
+import { putObject, publicPathFor } from "@/lib/storage";
 import sharp from "sharp";
-import fs from "node:fs/promises";
-import path from "node:path";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -37,9 +36,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
   }
 
-  const dir = path.join(process.cwd(), "public", "uploads", epaper.id);
-  await fs.mkdir(dir, { recursive: true });
-
   let nextPageNumber = (epaper.pages[0]?.pageNumber ?? 0) + 1;
   const created = [];
   let coverThumb: string | null = null;
@@ -48,28 +44,28 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     for (const file of files) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const pageNumber = nextPageNumber++;
-      const base = `page-${pageNumber}`;
-      const fullName = `${base}.jpg`;
-      const thumbName = `${base}-thumb.jpg`;
+      const fullPath = publicPathFor(epaper.id, `page-${pageNumber}.jpg`);
+      const thumbPath = publicPathFor(epaper.id, `page-${pageNumber}-thumb.jpg`);
 
-      // Normalize to JPEG, get dimensions (throws if not a real image)
-      const img = sharp(buffer).rotate();
-      const meta = await img.metadata();
-      await img.jpeg({ quality: 88 }).toFile(path.join(dir, fullName));
-      await sharp(buffer).rotate().resize(400).jpeg({ quality: 80 }).toFile(path.join(dir, thumbName));
+      const normalized = sharp(buffer).rotate();
+      const meta = await normalized.metadata();
+      const fullJpeg = await normalized.jpeg({ quality: 88 }).toBuffer();
+      const thumbJpeg = await sharp(buffer).rotate().resize(400).jpeg({ quality: 80 }).toBuffer();
 
-      const publicBase = `/uploads/${epaper.id}`;
+      await putObject(fullPath, fullJpeg, "image/jpeg");
+      await putObject(thumbPath, thumbJpeg, "image/jpeg");
+
       const page = await prisma.page.create({
         data: {
           epaperId: epaper.id,
           pageNumber,
-          fullImage: `${publicBase}/${fullName}`,
-          thumbImage: `${publicBase}/${thumbName}`,
+          fullImage: fullPath,
+          thumbImage: thumbPath,
           width: meta.width ?? null,
           height: meta.height ?? null,
         },
       });
-      if (pageNumber === 1) coverThumb = `${publicBase}/${thumbName}`;
+      if (pageNumber === 1) coverThumb = thumbPath;
       created.push(page);
     }
   } catch (err) {

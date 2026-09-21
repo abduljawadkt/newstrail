@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { assetSrc } from "@/lib/storage";
 import ManageEpaper from "@/components/admin/ManageEpaper";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ export default async function ManageEpaperPage({ params }: { params: { id: strin
       pages={epaper.pages.map((p) => ({
         id: p.id,
         pageNumber: p.pageNumber,
-        thumbImage: p.thumbImage,
+        thumbImage: assetSrc(p.thumbImage),
         articleCount: p._count.articles,
       }))}
     />

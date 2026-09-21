@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import EditionFilter from "@/components/EditionFilter";
+import { assetSrc } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -130,7 +131,8 @@ export default async function HomePage({
         {epapers && epapers.length > 0 && (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {epapers.map((ep) => {
-              const cover = ep.coverThumb ?? ep.pages[0]?.thumbImage ?? null;
+              const coverRaw = ep.coverThumb ?? ep.pages[0]?.thumbImage ?? null;
+              const cover = coverRaw ? assetSrc(coverRaw) : null;
               return (
                 <Link
                   key={ep.id}

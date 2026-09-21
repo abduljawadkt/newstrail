@@ -10,6 +10,7 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  output: "standalone",
   // Page images are served locally from /public/uploads via plain <img>,
   // so no remote image patterns are configured (avoids Image Optimizer exposure).
   images: {

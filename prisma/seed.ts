@@ -1,16 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import sharp from "sharp";
-import fs from "node:fs";
 import path from "node:path";
+import { putObject, publicPathFor } from "../src/lib/storage";
 
 const prisma = new PrismaClient();
-
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-
-function ensureDir(dir: string) {
-  fs.mkdirSync(dir, { recursive: true });
-}
 
 /** Build an SVG that looks like a newspaper page, then rasterize with sharp. */
 function pageSvg(pageNumber: number, dateLabel: string, width = 1000, height = 1400) {
@@ -41,30 +35,26 @@ function pageSvg(pageNumber: number, dateLabel: string, width = 1000, height = 1
 
 const LOGO_PATH = path.join(process.cwd(), "public", "logo.png");
 
-async function makePageImages(epaperFolder: string, pageNumber: number, dateLabel: string) {
-  ensureDir(epaperFolder);
+async function makePageImages(epaperId: string, pageNumber: number, dateLabel: string) {
   const svg = Buffer.from(pageSvg(pageNumber, dateLabel));
-  const fullName = `page-${pageNumber}.png`;
-  const thumbName = `page-${pageNumber}-thumb.png`;
+  const fullPath = publicPathFor(epaperId, `page-${pageNumber}.png`);
+  const thumbPath = publicPathFor(epaperId, `page-${pageNumber}-thumb.png`);
 
   // Composite the official NewsTrail logo as the page nameplate.
   const logoWidth = 320;
   const logo = await sharp(LOGO_PATH).resize({ width: logoWidth }).png().toBuffer();
-  const logoMeta = await sharp(logo).metadata();
   const composited = await sharp(svg)
     .composite([{ input: logo, top: 30, left: Math.round((1000 - logoWidth) / 2) }])
     .png()
     .toBuffer();
-  void logoMeta;
 
-  await sharp(composited).png().toFile(path.join(epaperFolder, fullName));
-  await sharp(composited).resize(400).png().toFile(path.join(epaperFolder, thumbName));
-  return { fullName, thumbName };
+  const thumb = await sharp(composited).resize(400).png().toBuffer();
+  await putObject(fullPath, composited, "image/png");
+  await putObject(thumbPath, thumb, "image/png");
+  return { fullPath, thumbPath };
 }
 
 async function main() {
-  ensureDir(UPLOAD_DIR);
-
   // --- Admin user ---
   const adminPass = await bcrypt.hash("admin123", 10);
   const admin = await prisma.user.upsert({
@@ -129,14 +119,11 @@ async function main() {
       create: { editionId: edition.id, publishDate: date, status: "PUBLISHED" },
     });
 
-    const folder = path.join(UPLOAD_DIR, epaper.id);
-    const publicBase = `/uploads/${epaper.id}`;
-
     const numPages = 4;
     let coverThumb: string | null = null;
     for (let pn = 1; pn <= numPages; pn++) {
-      const { fullName, thumbName } = await makePageImages(folder, pn, dateLabel);
-      if (pn === 1) coverThumb = `${publicBase}/${thumbName}`;
+      const { fullPath, thumbPath } = await makePageImages(epaper.id, pn, dateLabel);
+      if (pn === 1) coverThumb = thumbPath;
 
       const page = await prisma.page.upsert({
         where: { epaperId_pageNumber: { epaperId: epaper.id, pageNumber: pn } },
@@ -144,8 +131,8 @@ async function main() {
         create: {
           epaperId: epaper.id,
           pageNumber: pn,
-          fullImage: `${publicBase}/${fullName}`,
-          thumbImage: `${publicBase}/${thumbName}`,
+          fullImage: fullPath,
+          thumbImage: thumbPath,
           width: 1000,
           height: 1400,
         },

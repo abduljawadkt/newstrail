@@ -23,6 +23,8 @@ FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+# Bind to all interfaces so Render's router can reach the app (avoids 502)
+ENV HOSTNAME=0.0.0.0
 # openssl/ca-certificates required by the Prisma query engine at runtime
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN groupadd -r nodejs && useradd -r -g nodejs nextjs

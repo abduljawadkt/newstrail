@@ -79,6 +79,35 @@ export default function ManageEpaper({
     router.refresh();
   }
 
+  async function autoDetect(replace: boolean) {
+    if (
+      !confirm(
+        replace
+          ? "Re-detect articles on ALL pages? Existing article regions will be replaced."
+          : "Auto-detect articles on pages that don't have any yet? This uses AI and may take a minute."
+      )
+    )
+      return;
+    setBusy(true);
+    setMsg("Detecting articles with AI… this can take a minute for a full edition.");
+    const res = await fetch(`/api/admin/epaper/${epaperId}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ replace }),
+    });
+    const d = await res.json();
+    setBusy(false);
+    if (res.ok) {
+      setMsg(
+        `Detected ${d.created} article(s) across ${d.processed} page(s)` +
+          (d.errors?.length ? ` — issues on: ${d.errors.join(", ")}` : "")
+      );
+      router.refresh();
+    } else {
+      setMsg(d.error || "Detection failed");
+    }
+  }
+
   async function togglePublish() {
     setBusy(true);
     const next = status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
@@ -164,6 +193,27 @@ export default function ManageEpaper({
         </div>
         {msg && <p className="text-sm text-ink-muted md:col-span-2">{msg}</p>}
       </div>
+
+      {/* Auto-detect articles */}
+      {pages.length > 0 && (
+        <div className="card mb-6 flex flex-wrap items-center justify-between gap-3 p-4">
+          <div>
+            <h2 className="text-sm font-semibold">✨ Auto-detect articles (AI)</h2>
+            <p className="mt-0.5 text-xs text-ink-muted">
+              Finds each story on every page and makes it clickable & downloadable. You can still
+              adjust boxes in the mapper.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => autoDetect(false)} disabled={busy} className="btn-primary disabled:opacity-50">
+              Detect articles
+            </button>
+            <button onClick={() => autoDetect(true)} disabled={busy} className="btn-outline disabled:opacity-50">
+              Re-detect all
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Pages grid */}
       <h2 className="mb-3 text-sm font-semibold">Pages ({pages.length})</h2>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -60,6 +60,15 @@ export default function EpaperViewer({
   const [drawing, setDrawing] = useState(false);
   const [start, setStart] = useState<{ x: number; y: number } | null>(null);
   const [rect, setRect] = useState<Rect | null>(null);
+
+  // Keep the toolbar sticky right below the (sticky) site header.
+  const [stickyTop, setStickyTop] = useState(0);
+  useEffect(() => {
+    const measure = () => setStickyTop(document.querySelector("header")?.offsetHeight ?? 0);
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const page = pages[index];
   if (!page) return null;
@@ -145,8 +154,11 @@ export default function EpaperViewer({
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="border-b border-neutral-200 bg-neutral-50">
+      {/* Toolbar (sticky below the site header) */}
+      <div
+        className="sticky z-20 border-b border-neutral-200 bg-neutral-50/95 shadow-sm backdrop-blur"
+        style={{ top: stickyTop }}
+      >
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2">
           <div className="flex items-center gap-2">
             <button onClick={() => setPage(Math.max(0, index - 1))} disabled={index === 0} className={btn + " disabled:opacity-40"}>

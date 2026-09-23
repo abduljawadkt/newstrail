@@ -105,10 +105,10 @@ export default async function HomePage({
         {latest && heroFront && (
           <Link
             href={latestHref}
-            className="group absolute right-8 top-1/2 z-10 hidden -translate-y-1/2 md:block lg:right-20"
+            className="group absolute right-6 top-1/2 z-10 hidden -translate-y-1/2 lg:block lg:right-24 xl:right-32"
             aria-label={`Open ${latest.edition.name} — ${heroDate}`}
           >
-            <div className="relative w-52 rotate-[-4deg] overflow-hidden rounded-lg border border-line bg-white shadow-card-hover ring-1 ring-black/5 transition-all duration-300 group-hover:-translate-y-1 group-hover:rotate-0 lg:w-64">
+            <div className="relative w-64 rotate-[-3deg] overflow-hidden rounded-xl border border-line bg-white shadow-card-hover ring-1 ring-black/5 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:rotate-0 lg:w-80 xl:w-[22rem]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={heroFront}
@@ -161,7 +161,7 @@ export default async function HomePage({
 
             {/* Latest front-page preview (mobile) */}
             {latest && heroFront && (
-              <Link href={latestHref} className="mt-8 inline-block w-36 md:hidden">
+              <Link href={latestHref} className="mt-8 inline-block w-40 lg:hidden">
                 <div className="relative rotate-[-3deg] overflow-hidden rounded-lg border border-line bg-white shadow-card">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

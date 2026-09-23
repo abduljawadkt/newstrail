@@ -19,6 +19,15 @@
   ::selection {
     @apply bg-brand/15;
   }
+  /* Keep autofilled inputs on-brand (no blue/yellow tint) */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #191512;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+    caret-color: #191512;
+    transition: background-color 9999s ease-in-out 0s;
+  }
 }
 
 @layer components {
@@ -52,10 +61,10 @@
 
   /* Inputs */
   .input {
-    @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15;
+    @apply w-full rounded-lg border border-line bg-paper/60 px-3.5 py-2.5 text-ink placeholder:text-ink-muted transition focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/15;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-ink-soft;
+    @apply mb-1.5 block text-sm font-semibold tracking-wide text-ink-soft;
   }
 
   /* Numerals — clean lining, tabular figures for prices/stats/IDs */

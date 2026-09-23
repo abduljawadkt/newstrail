@@ -25,12 +25,12 @@ function BrandPanel() {
       <img src="/logo.png" alt="NewsTrail" className="relative h-9 w-auto brightness-0 invert" />
 
       <div className="relative">
-        <h2 className="headline text-4xl leading-tight">
+        <h2 className="headline text-4xl leading-tight text-white md:text-[2.75rem]">
           Your newspaper,
           <br />
           delivered digitally.
         </h2>
-        <p className="mt-4 max-w-sm text-white/80">
+        <p className="mt-4 max-w-sm leading-relaxed text-white/85">
           Read every edition page by page, clip and download stories, and browse the full
           archive — anywhere, anytime.
         </p>
@@ -80,8 +80,9 @@ function LoginForm() {
 
   return (
     <div className="w-full">
-      <h1 className="headline text-3xl">Welcome back</h1>
-      <p className="mt-1.5 text-ink-muted">Sign in to read the latest editions.</p>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand">Sign in</p>
+      <h1 className="headline text-3xl text-ink md:text-4xl">Welcome back</h1>
+      <p className="mt-2 text-ink-soft">Access today&apos;s edition and the full archive.</p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-5">
         {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

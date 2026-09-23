@@ -90,9 +90,9 @@ async function main() {
 
   // --- Plans ---
   const plans = [
-    { name: "Monthly", priceInPaise: 9900, durationDays: 30, features: "Full access to all editions for 30 days" },
-    { name: "Quarterly", priceInPaise: 24900, durationDays: 90, features: "3 months access + article clipping" },
-    { name: "Annual", priceInPaise: 79900, durationDays: 365, features: "Best value — 12 months full access" },
+    { name: "6 Months", priceInPaise: 39900, durationDays: 182, features: "Full access to all editions for 6 months" },
+    { name: "1 Year", priceInPaise: 79900, durationDays: 365, features: "Best value — 12 months of full access + article clipping" },
+    { name: "2 Years", priceInPaise: 149900, durationDays: 730, features: "2 years of full access + article clipping" },
   ];
   for (const p of plans) {
     const existing = await prisma.plan.findFirst({ where: { name: p.name } });

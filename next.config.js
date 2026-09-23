@@ -10,14 +10,18 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  output: "standalone",
   // Page images are served locally from /public/uploads via plain <img>,
   // so no remote image patterns are configured (avoids Image Optimizer exposure).
   images: {
     remotePatterns: [],
   },
   experimental: {
-    serverComponentsExternalPackages: ["pdf-to-img", "@napi-rs/canvas", "sharp"],
+    serverComponentsExternalPackages: [
+      "pdf-to-img",
+      "@napi-rs/canvas",
+      "sharp",
+      "@aws-sdk/client-s3",
+    ],
   },
   async headers() {
     return [

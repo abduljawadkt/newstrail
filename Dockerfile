@@ -1,6 +1,7 @@
 # ---- deps ----
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci
@@ -8,12 +9,11 @@ RUN npm ci
 # ---- build ----
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
-# openssl so Prisma detects the right engine (OpenSSL 3.x on Bookworm)
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
-# Dummy DB URL so `next build` can run without a live database
+# Dummy env so `next build` can run without live services
 ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db"
 ENV NEXTAUTH_SECRET="build-time-placeholder"
 RUN npm run build
@@ -23,21 +23,18 @@ FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
-# Bind to all interfaces so Render's router can reach the app (avoids 502)
 ENV HOSTNAME=0.0.0.0
-# openssl/ca-certificates required by the Prisma query engine at runtime
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-RUN groupadd -r nodejs && useradd -r -g nodejs nextjs
+# System libs: openssl (Prisma), fontconfig (canvas/PDF text rendering)
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates fontconfig && rm -rf /var/lib/apt/lists/*
 
-# Next.js standalone output
+# Full dependency tree so native + dynamically-imported modules
+# (sharp, pdf-to-img, @napi-rs/canvas, @aws-sdk/client-s3, prisma engine) are present.
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# Prisma engine + schema for runtime
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.js ./next.config.js
 COPY --from=builder /app/prisma ./prisma
 
-USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]

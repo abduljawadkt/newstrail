@@ -165,10 +165,10 @@ export default async function HomePage({
             {latest && heroFront && (
               <Link
                 href={latestHref}
-                className="group mt-10 block w-48 sm:w-56 lg:hidden"
+                className="group mx-auto mt-10 block w-72 max-w-[80%] sm:w-80 lg:hidden"
                 aria-label={`Open ${latest.edition.name} — ${heroDate}`}
               >
-                <div className="relative rotate-[-3deg] overflow-hidden rounded-xl border border-line bg-white shadow-card-hover ring-1 ring-black/5 transition-transform duration-300 group-active:rotate-0">
+                <div className="relative rotate-[-2deg] overflow-hidden rounded-xl border border-line bg-white shadow-card-hover ring-1 ring-black/5 transition-transform duration-300 group-active:rotate-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={heroFront}

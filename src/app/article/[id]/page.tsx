@@ -112,7 +112,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
       </article>
 
       <div className="mt-8 border-t border-neutral-200 pt-4 text-xs text-neutral-400">
-        NewsTrail · {edition.name} edition · {dateLabel} · Page {article.page.pageNumber} · News ID{" "}
+        News Trail · {edition.name} edition · {dateLabel} · Page {article.page.pageNumber} · News ID{" "}
         <span className="font-mono">{article.code}</span>
       </div>
 

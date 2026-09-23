@@ -22,7 +22,7 @@ function BrandPanel() {
         className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-3xl"
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo.png" alt="NewsTrail" className="relative h-9 w-auto brightness-0 invert" />
+      <img src="/logo.png" alt="News Trail" className="relative h-9 w-auto brightness-0 invert" />
 
       <div className="relative">
         <h2 className="headline text-4xl leading-tight text-white md:text-[2.75rem]">
@@ -50,7 +50,7 @@ function BrandPanel() {
         </ul>
       </div>
 
-      <p className="relative text-sm text-white/60">© {new Date().getFullYear()} NewsTrail India</p>
+      <p className="relative text-sm text-white/60">© {new Date().getFullYear()} News Trail India</p>
     </div>
   );
 }
@@ -111,7 +111,7 @@ function LoginForm() {
       </form>
 
       <p className="mt-6 text-center text-sm text-ink-muted">
-        New to NewsTrail?{" "}
+        New to News Trail?{" "}
         <Link href="/register" className="font-medium text-brand hover:underline">
           Create an account
         </Link>
@@ -127,7 +127,7 @@ export default function LoginPage() {
       <div className="flex items-center justify-center bg-white px-6 py-14 sm:px-12">
         <div className="w-full max-w-sm">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="NewsTrail" className="mx-auto mb-10 h-8 w-auto md:hidden" />
+          <img src="/logo.png" alt="News Trail" className="mx-auto mb-10 h-8 w-auto md:hidden" />
           <Suspense fallback={<div className="text-ink-muted">Loading…</div>}>
             <LoginForm />
           </Suspense>

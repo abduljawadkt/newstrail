@@ -72,9 +72,6 @@ export default async function HomePage({
   }
 
   const hasFilter = Boolean(dateStr) || editionSlug !== "all";
-  const heroImg = latest
-    ? assetSrc(latest.pages[0]?.fullImage ?? latest.coverThumb ?? "")
-    : "";
   const heroDate = latest
     ? latest.publishDate.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
     : "";
@@ -82,22 +79,34 @@ export default async function HomePage({
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-line bg-gradient-to-b from-white to-paper">
+      <section className="relative isolate flex min-h-[440px] items-center overflow-hidden border-b border-line md:min-h-[560px]">
+        {/* Background: wide image on desktop, portrait on mobile */}
+        <picture>
+          <source media="(max-width: 767px)" srcSet="/hero-mobile.webp" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero.webp"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 -z-10 h-full w-full object-cover object-right"
+          />
+        </picture>
+        {/* Legibility scrim over the light side */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand/5 blur-3xl"
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-paper via-paper/85 to-paper/10 md:to-transparent"
         />
-        <div className="mx-auto grid max-w-content items-center gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 md:py-20">
-          {/* Copy */}
+
+        <div className="mx-auto w-full max-w-content px-4 py-16 sm:px-6">
           <div className="max-w-xl">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-brand">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-brand backdrop-blur">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
-              {latest ? `Today's edition · ${heroDate}` : "Digital newspaper"}
+              {latest ? `Latest edition · ${heroDate}` : "Digital newspaper"}
             </p>
-            <h1 className="headline text-4xl leading-[1.03] md:text-6xl">
-              Read NewsTrail,<br />page by page.
+            <h1 className="headline text-4xl leading-[1.03] text-ink md:text-6xl">
+              Read News Trail,<br />page by page.
             </h1>
-            <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-soft">
               The full newspaper, exactly as it appears in print — flip pages, zoom in,
               clip and download any story, and browse the archive by date.
             </p>
@@ -109,45 +118,19 @@ export default async function HomePage({
                 >
                   Read today&apos;s paper →
                 </Link>
-                <Link href="/subscribe" className="btn-outline px-6 py-3 text-base">
+                <Link
+                  href="/subscribe"
+                  className="btn-outline bg-white/80 px-6 py-3 text-base backdrop-blur"
+                >
                   View subscription plans
                 </Link>
               </div>
             )}
-            <div className="mt-8 flex items-center gap-6 text-sm text-ink-muted">
+            <div className="mt-8 flex items-center gap-6 text-sm text-ink-soft">
               <span className="flex items-center gap-2"><span className="text-brand">✓</span> Every edition daily</span>
-              <span className="flex items-center gap-2"><span className="text-brand">✓</span> Clip & download</span>
+              <span className="flex items-center gap-2"><span className="text-brand">✓</span> Clip &amp; download</span>
             </div>
           </div>
-
-          {/* Featured front page */}
-          {latest && heroImg && (
-            <div className="relative mx-auto w-full max-w-sm md:justify-self-end">
-              <div className="absolute -inset-4 -z-10 rounded-2xl bg-brand/5" />
-              <Link
-                href={`/epaper/${latest.edition.slug}/${formatCardDate(latest.publishDate)}`}
-                className="group block"
-              >
-                <div className="relative rotate-[-2deg] overflow-hidden rounded-lg border border-line bg-white shadow-card-hover transition-transform duration-300 group-hover:rotate-0 group-hover:-translate-y-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={heroImg}
-                    alt={`${latest.edition.name} front page`}
-                    className="block aspect-[3/4] w-full object-cover object-top"
-                  />
-                  <div className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow">
-                    {latest.edition.name} · {latest._count.pages} pages
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent px-4 pb-3 pt-10 text-white">
-                    <span className="text-sm font-medium">{heroDate}</span>
-                    <span className="rounded bg-white/95 px-2.5 py-1 text-xs font-semibold text-brand opacity-0 transition-opacity group-hover:opacity-100">
-                      Open →
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 

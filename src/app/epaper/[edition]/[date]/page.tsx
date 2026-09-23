@@ -27,7 +27,7 @@ export async function generateMetadata({
   const title = `${epaper.edition.name} — ${label}`;
   return {
     title,
-    description: `Read the ${epaper.edition.name} edition of NewsTrail for ${label}, page by page.`,
+    description: `Read the ${epaper.edition.name} edition of News Trail for ${label}, page by page.`,
     openGraph: { title, type: "article" },
   };
 }

@@ -8,9 +8,9 @@
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   const body = [
     `To: ${to}`,
-    `Subject: Reset your NewsTrail password`,
+    `Subject: Reset your News Trail password`,
     ``,
-    `We received a request to reset your NewsTrail password.`,
+    `We received a request to reset your News Trail password.`,
     `Click the link below to set a new password (valid for 1 hour):`,
     resetUrl,
     ``,

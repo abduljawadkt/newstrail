@@ -45,7 +45,7 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="mb-8 text-center">
         <h1 className="headline text-3xl">Create your account</h1>
-        <p className="mt-2 text-ink-muted">Join NewsTrail in a few seconds</p>
+        <p className="mt-2 text-ink-muted">Join News Trail in a few seconds</p>
       </div>
       <form onSubmit={onSubmit} className="card space-y-5 p-7">
         {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

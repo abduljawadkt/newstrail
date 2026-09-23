@@ -14,6 +14,10 @@ export default function EditionFilter({
   edition: string; // slug or "all"
 }) {
   const router = useRouter();
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")}`;
 
   function apply(next: { date?: string; edition?: string }) {
     const d = next.date ?? date;
@@ -34,6 +38,7 @@ export default function EditionFilter({
         <input
           type="date"
           value={date}
+          max={todayIso}
           onChange={(e) => apply({ date: e.target.value })}
           className="input num w-48"
         />

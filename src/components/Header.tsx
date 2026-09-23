@@ -31,9 +31,9 @@ export default function Header() {
           {today}
         </div>
 
-        <Link href="/" className="shrink-0" aria-label="NewsTrail home">
+        <Link href="/" className="shrink-0" aria-label="News Trail home">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="NewsTrail" className="h-8 w-auto md:h-9" />
+          <img src="/logo.png" alt="News Trail" className="h-8 w-auto md:h-9" />
         </Link>
 
         <nav className="flex w-56 items-center justify-end gap-2.5 text-sm">

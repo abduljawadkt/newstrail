@@ -74,6 +74,11 @@ export default function EpaperViewer({
   if (!page) return null;
   const locked = !canReadAll && page.pageNumber > freePageCount;
 
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")}`;
+
   function goEdition(slug: string) {
     if (slug !== currentSlug) router.push(`/epaper/${slug}/${dateParam}`);
   }
@@ -135,6 +140,7 @@ export default function EpaperViewer({
           <input
             type="date"
             defaultValue={isoDate}
+            max={todayIso}
             onChange={(e) => onDateChange(e.target.value)}
             className="shrink-0 rounded border border-neutral-300 px-2 py-1 text-sm"
           />

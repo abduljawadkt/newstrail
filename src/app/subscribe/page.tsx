@@ -15,7 +15,7 @@ export default async function SubscribePage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12">
       <div className="mb-10 text-center">
-        <h1 className="masthead text-3xl font-bold">Subscribe to NewsTrail</h1>
+        <h1 className="masthead text-3xl font-bold">Subscribe to News Trail</h1>
         <p className="mt-2 text-neutral-500">
           Unlock every edition, every page, every day. Cancel anytime.
         </p>

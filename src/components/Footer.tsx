@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="NewsTrail" className="h-7 w-auto" />
+            <img src="/logo.png" alt="News Trail" className="h-7 w-auto" />
             <p className="mt-2 max-w-sm text-sm text-ink-muted">
               India&apos;s newspaper, delivered digitally. Read every edition, page by page.
             </p>
@@ -20,7 +20,7 @@ export default function Footer() {
           </nav>
         </div>
         <div className="mt-8 border-t border-line pt-6 text-sm text-ink-muted">
-          © {new Date().getFullYear()} NewsTrail India. All rights reserved.
+          © {new Date().getFullYear()} News Trail India. All rights reserved.
         </div>
       </div>
     </footer>

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   const txnid = `NT${Date.now()}${crypto.randomBytes(3).toString("hex")}`;
   const amount = (plan.priceInPaise / 100).toFixed(2);
-  const productinfo = `NewsTrail ${plan.name} Subscription`;
+  const productinfo = `News Trail ${plan.name} Subscription`;
 
   // Create payment + pending subscription linked together
   const payment = await prisma.payment.create({

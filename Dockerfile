@@ -24,8 +24,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-# System libs: openssl (Prisma), fontconfig (canvas/PDF text rendering)
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates fontconfig && rm -rf /var/lib/apt/lists/*
+# System libs: openssl (Prisma), poppler-utils (pdftoppm PDF->image), fontconfig (fonts)
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates poppler-utils fontconfig && rm -rf /var/lib/apt/lists/*
 
 # Full dependency tree so native + dynamically-imported modules
 # (sharp, pdf-to-img, @napi-rs/canvas, @aws-sdk/client-s3, prisma engine) are present.

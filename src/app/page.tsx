@@ -84,21 +84,23 @@ export default async function HomePage({
     <div>
       {/* Hero */}
       <section className="relative isolate flex min-h-[440px] items-center overflow-hidden border-b border-line md:min-h-[560px]">
-        {/* Background: wide image on desktop, portrait on mobile */}
-        <picture>
-          <source media="(max-width: 767px)" srcSet="/hero-mobile.webp" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/hero.webp"
-            alt=""
-            aria-hidden
-            className="absolute inset-0 -z-10 h-full w-full object-cover object-right"
-          />
-        </picture>
-        {/* Legibility scrim over the light side */}
+        {/* Lifestyle background — desktop/tablet only */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero.webp"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 -z-10 hidden h-full w-full object-cover object-right md:block"
+        />
+        {/* Legibility scrim over the photo (md+) */}
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-r from-paper via-paper/85 to-paper/10 md:to-transparent"
+          className="absolute inset-0 -z-10 hidden bg-gradient-to-r from-paper via-paper/85 to-transparent md:block"
+        />
+        {/* Clean branded background — mobile only */}
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-paper to-brand-50 md:hidden"
         />
 
         {/* Latest front-page preview (desktop) */}
@@ -139,36 +141,46 @@ export default async function HomePage({
               clip and download any story, and browse the archive by date.
             </p>
             {latest && (
-              <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Link
                   href={`/epaper/${latest.edition.slug}/${formatCardDate(latest.publishDate)}`}
-                  className="btn-primary px-6 py-3 text-base shadow-card"
+                  className="btn-primary w-full px-6 py-3 text-base shadow-card sm:w-auto"
                 >
                   Read today&apos;s paper →
                 </Link>
                 <Link
                   href="/subscribe"
-                  className="btn-outline bg-white/80 px-6 py-3 text-base backdrop-blur"
+                  className="btn-outline w-full bg-white/80 px-6 py-3 text-base backdrop-blur sm:w-auto"
                 >
                   View subscription plans
                 </Link>
               </div>
             )}
-            <div className="mt-8 flex items-center gap-6 text-sm text-ink-soft">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-soft">
               <span className="flex items-center gap-2"><span className="text-brand">✓</span> Every edition daily</span>
               <span className="flex items-center gap-2"><span className="text-brand">✓</span> Clip &amp; download</span>
             </div>
 
-            {/* Latest front-page preview (mobile) */}
+            {/* Latest front-page preview (mobile/tablet) */}
             {latest && heroFront && (
-              <Link href={latestHref} className="mt-8 inline-block w-40 lg:hidden">
-                <div className="relative rotate-[-3deg] overflow-hidden rounded-lg border border-line bg-white shadow-card">
+              <Link
+                href={latestHref}
+                className="group mt-10 block w-48 sm:w-56 lg:hidden"
+                aria-label={`Open ${latest.edition.name} — ${heroDate}`}
+              >
+                <div className="relative rotate-[-3deg] overflow-hidden rounded-xl border border-line bg-white shadow-card-hover ring-1 ring-black/5 transition-transform duration-300 group-active:rotate-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={heroFront}
                     alt={`${latest.edition.name} front page`}
                     className="block aspect-[3/4] w-full object-cover object-top"
                   />
+                  <span className="absolute left-2.5 top-2.5 rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-semibold text-white shadow">
+                    {latest.edition.name} · {latest._count.pages}p
+                  </span>
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-8 text-xs font-semibold text-white">
+                    Open latest →
+                  </span>
                 </div>
               </Link>
             )}
